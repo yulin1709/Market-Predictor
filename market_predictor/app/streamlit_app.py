@@ -592,7 +592,7 @@ if "today_signals" not in st.session_state:
         json.dumps([
             {
                 "headline": a["headline"],
-                "text": (a["headline"] + " " + (a.get("body_text") or "")[:400]).strip()
+                "text": (a["headline"] + " " + (a.get("body_text") or "")[:2000]).strip()
             }
             for a in st.session_state.articles
         ])
