@@ -290,7 +290,7 @@ def fetch_news() -> list[dict]:
     return todays if todays else articles
 
 
-@st.cache_data(ttl=900, show_spinner=False)
+@st.cache_data(ttl=60, show_spinner=False)  # short TTL — re-evaluates frequently
 def fetch_news_with_fallback() -> tuple[list[dict], str]:
     """
     Returns (articles, source) where source is 'S&P Global Platts', 'S&P (DB cache)', or 'GDELT (fallback)'.
@@ -381,7 +381,7 @@ def _load_predict_fn():
 
 
 # ── Signal computation ────────────────────────────────────────────────────────
-@st.cache_data(ttl=900, show_spinner=False)
+@st.cache_data(ttl=300, show_spinner=False)
 def compute_today_signals(articles_json: str) -> list[dict]:
     """Score articles and compute per-commodity signals. Returns list of commodity signal dicts."""
     articles = json.loads(articles_json)
