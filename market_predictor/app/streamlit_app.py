@@ -474,10 +474,15 @@ def compute_today_signals(articles_json: str) -> list[dict]:
         move = ">3%" if label == "HIGH" else ("1-3%" if label == "MEDIUM" else "<1%")
 
         n_rel = len(rel)
-        article_factor = min(n_rel / 15.0, 1.0)
-        label_factor = 1.4 if label == "HIGH" else (1.2 if label == "MEDIUM" else 1.0)
-        dir_factor = 1.0 if direction != "neutral" else 0.6
-        scaled_conf = min(max(conf * 4.5 * label_factor * dir_factor * (0.7 + article_factor * 0.3), 35), 95)
+        # Map raw model confidence directly to display %
+        # Below 0.40 = low confidence (maps to 35-49%), above 0.55 = actionable (50%+)
+        if conf < 0.40:
+            scaled_conf = 35.0 + (conf / 0.40) * 14  # 35-49%
+        elif conf < 0.60:
+            scaled_conf = 50.0 + ((conf - 0.40) / 0.20) * 20  # 50-70%
+        else:
+            scaled_conf = 70.0 + ((conf - 0.60) / 0.40) * 25  # 70-95%
+        scaled_conf = round(min(max(scaled_conf, 35), 95), 1)
 
         # Only show directional bias if confidence is meaningful (≥50%)
         # Below 50% = model is uncertain, don't suggest Long/Short
