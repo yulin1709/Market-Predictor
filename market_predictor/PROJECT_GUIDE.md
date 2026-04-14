@@ -483,3 +483,41 @@ ENABLE_SIMILARITY_SEARCH=false  # enable ChromaDB similarity search
 - Low-confidence cards (<50%) show grey "~ Bullish/Bearish Lean" with "monitor only" warning — no Long/Short shown
 - Smart "Pending" labels: shows "📅 Saturday — no market", "📅 Holiday — no market" instead of generic "⏳ Pending"
 - P&L card falls back to all resolved signals when no TRADE signals exist (instead of showing $0)
+
+---
+
+## Recent Changes (April 2026 — Part 2)
+
+### Confidence Display Fix
+The `scaled_conf` formula was broken — it multiplied raw `high_prob` by `article_factor` which was 0 when no commodity-keyword articles existed, clamping everything to the 35% floor.
+
+**New formula (linear mapping):**
+```python
+if conf < 0.40:   scaled_conf = 35 + (conf/0.40) * 14      # 35-49%
+elif conf < 0.60: scaled_conf = 50 + ((conf-0.40)/0.20)*20  # 50-70%
+else:             scaled_conf = 70 + ((conf-0.60)/0.40)*25  # 70-95%
+```
+This maps raw model output directly to display range without artificial dampening.
+
+### Top-5 Confidence Averaging
+`compute_today_signals` previously averaged `high_prob` across ALL articles in the pool. With 31 empty S&P package articles (high_prob ≈ 0) and 1 Iran article (high_prob = 0.64), the average was 0.64/32 = 2% → clamped to 35%.
+
+**Fix:** Sort pool by `high_prob` descending, take top-5, average those. The Iran Conflict article (64% HIGH) now drives the signal instead of being diluted.
+
+### DB Quality Articles Always Included
+`fetch_news_with_fallback` now always pulls the 10 most recent articles with body text > 500 chars from the last 7 days, excluding price table PDFs (Marketwire, Marketscan). These are merged with S&P API results before scoring.
+
+### Body Text Slice Increased
+Articles passed to `compute_today_signals` now use `body_text[:2000]` (was `[:400]`). The Iran Conflict article's first 400 chars was copyright boilerplate — the actual content ("war with Iran has turned oil markets upside down") starts at ~200 chars.
+
+### GDELT Fallback Improved
+GDELT now triggers when S&P articles have no real content (body text < 500 chars AND headline < 40 chars or is a known noise report name), not just when count < 5.
+
+### Streamlit Cloud Deployment
+- `articles_deploy.db` (0.4MB) committed — predictions + prices for Cloud deployment
+- `data/db_path.py` — central DB path helper, all modules use it
+- Root `requirements.txt` for Streamlit Cloud (excludes torch/transformers — too large)
+- Main file path: `market_predictor/app/streamlit_app.py`
+
+### Files Cleaned
+Removed: `_db_snapshot.py`, `_debug_price_parse.py`, `_inspect_body.py`, `debug_signals.py`, `test_commodity.py`, `virtual_env.py`, checkpoint folders, `__pycache__` directories
