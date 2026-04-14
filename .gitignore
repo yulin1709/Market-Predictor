@@ -1,0 +1,34 @@
+# Secrets — never commit
+.env
+market_predictor/.env
+market_predictor/.streamlit/secrets.toml
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.Python
+
+# Virtual environments — too large (~500MB)
+venv/
+.venv/
+market_predictor/venv/
+
+# Raw database — too large (78MB), recipient doesn't need it to run the dashboard
+# The pre-trained model (models/saved/) is included instead
+market_predictor/data/articles.db
+market_predictor/data/articles.db.bak
+market_predictor/data/articles.db-shm
+market_predictor/data/articles.db-wal
+# articles_deploy.db is intentionally included (0.4MB — predictions + prices for Streamlit Cloud)
+
+# Large model files — FinBERT is downloaded at runtime
+market_predictor/models/saved/classifier_finbert/
+
+# Checkpoints
+market_predictor/_checkpoint_*/
+
+# OS
+.DS_Store
+Thumbs.db

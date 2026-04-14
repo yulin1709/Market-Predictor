@@ -1,0 +1,34 @@
+# Root-level requirements for Streamlit Cloud deployment
+# App entry point: market_predictor/app/streamlit_app.py
+
+# Core
+requests>=2.31
+pandas>=2.0
+numpy>=1.26
+scikit-learn>=1.4
+xgboost>=2.0
+joblib>=1.3
+scipy>=1.12
+python-dotenv>=1.0
+
+# NLP / ML
+sentence-transformers>=2.7
+pdfplumber>=0.11
+pypdf>=4.0
+
+# Vector store
+chromadb>=0.5
+
+# Dashboard
+streamlit>=1.35
+plotly>=5.20
+
+# AI commentary
+google-generativeai>=0.5
+
+# Utilities
+textblob>=0.17
+yfinance>=0.2
+
+# Note: transformers and torch are excluded — too large for Streamlit Cloud free tier.
+# FinBERT model falls back to TF-IDF+XGBoost automatically.
